@@ -1,0 +1,35 @@
+version: "3"
+
+services:
+  app:
+    # Use this line for development
+    #build: . 
+    # Use this line for pull image from Github
+    image: docker.pkg.github.com/maxservicesbiz/odoo/msb-odoo:14.0
+    container_name: msb-odoo
+    depends_on:
+      - db
+    environment:
+      USER: odoo
+      PASSWORD: odoo
+      HOST: db
+    ports:
+      - "8069:8069"
+    volumes:
+      # Use this line for development
+      #- ./:/mnt/extra-addons
+      - msb-app-data:/var/lib/odoo
+  db:
+    container_name: msb-odoo-db
+    image: postgres:10-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: odoo
+      POSTGRES_PASSWORD: odoo
+      POSTGRES_DB: postgres
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - msb-db-data:/var/lib/postgresql/data/pgdata
+volumes:
+  msb-app-data:
+  msb-db-data:
