@@ -8,7 +8,10 @@ RUN set -x; \
             git \ 
             vim \
             python3-setuptools
-COPY requirements.txt /tmp/requirements.txt
-RUN pip3 install --no-cache-dir --upgrade pip -r /tmp/requirements.txt
+
+ARG addons=/mnt/extra-addons
+COPY . ${addons}
+RUN pip3 install --no-cache-dir --upgrade pip setuptools
+RUN pip3 install --no-cache-dir -r ${addons}/requirements.txt
 
 USER odoo
