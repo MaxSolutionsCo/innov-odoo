@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- Copyright 2021 Max Services Biz. All rights reserved. -->
+
+<odoo>
+    <template id="msb_track_order_layout" name="MSB Track Order">
+        <div class="oe_structure oe_empty" id="wrap">
+            <section t-if="not len(items)" id="msb-track-order"> 
+                <div class="container">
+                    <div class="row ">                        
+                        <div class="col-md-12 text-center">
+                            <p>
+                                Esta es la forma más rápida de verificar el estado de tu envío. <br/>Simplemente ingresa tu número de orden para verificar el progreso en tiempo real y los detalles del envío. <br/><br/>
+                                <span class="text-muted">Ten en cuenta que los datos de seguimiento pueden tardar hasta 24 horas en estar disponibles.</span>
+                            </p>
+                            <form action="/track-order" method="POST"> 
+                                <div class="form-group field-so-name">
+                                    <input type="text" name="so-name" id="so-name" required="True"
+                                            style="text-align:center;"
+                                           class="form-control" placeholder="No. de  orden" maxlength="64"/>
+                                </div>
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+    
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fa fa-search"></i>
+                                    Rastrear Pedido
+                                </button>
+                            </form>
+                            <p t-if="message">
+                                <br/>
+                                <span t-esc="message"/>
+                            </p>
+                        </div>
+                    </div>  
+                </div>
+                <br/><br/><br/><br/>
+            </section>
+            <section t-if="len(items)" id="msb-track-order-timeline">
+                <div class="container">
+                    <div class="row text-center">
+                        <div t-if="so_name" class="col-md-4">
+                            <h3><a t-att-href="'/my/orders/%s' % so_id " t-esc="so_name"/></h3>
+                            <i class="fa fa-shopping-basket"></i>
+                            <span class="text-muted">No. Orden</span>
+                        </div>
+                        <div t-if="estimated_delivery_date" class="col-md-4">
+                            <h3 t-esc="estimated_delivery_date"></h3>
+                            <i class="fa fa-calendar-o"></i>
+                            <span class="text-muted">                            
+                                Fecha estimada de entrega
+                            </span>
+                        </div>
+                        <div t-if ="carrier_code" class="col-md-4">
+                            <h3 t-esc="carrier_code"></h3>
+                            <i class="fa fa-truck"></i>
+                            <span class="text-muted">Código de rastreo <t t-if="carrier_name">via <b t-esc="carrier_name"/> </t></span>
+                        </div>
+                    </div>
+    
+                    <div class="row text-center">
+                        <div class="col-md-12">
+                            <ul class="timeline">
+                                <t t-set="item_index" t-value="1"/>
+                                <li t-foreach="items" t-as="item" >                                
+                                    <div t-att-class="'direction-r' if item_index%2 else 'direction-l'">
+                                      <div class="flag-wrapper">
+                                        <span class="hexa"></span>
+                                        <span class="flag" t-esc="item.get('name')"/>
+                                        <span class="time-wrapper"><span class="time" t-esc="item.get('date')"/></span>
+                                      </div>
+                                      <div class="desc" t-esc="item.get('description')"/>
+                                    </div>
+                                    <t t-set="item_index" t-value="item_index + 1"/>
+                                </li>
+                              </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+        
+
+    </template>
+
+    <template id="msb_track_order_templ" name="Rastrea tu pedido">
+        <t t-call="website.layout">
+            <div class="text-center">
+                <h3 class="page-header">Rastrea tu Pedido</h3>
+            </div>
+            <t t-call="msb_track_order.msb_track_order_layout">
+            </t>
+        </t>
+    </template>
+
+    <template id="msb_track_order_assets" name="MSB  Track order assets frontend" inherit_id="website.assets_frontend">
+        <xpath expr="." position="inside">
+            <link rel="stylesheet" href="/msb_track_order/static/src/css/track_order.css"/>
+        </xpath>
+    </template>
+</odoo>
