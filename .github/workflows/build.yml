@@ -1,0 +1,20 @@
+name: Build and Push Image on  Github Packages
+
+on: [push]
+
+jobs: 
+  build:
+    runs-on: ubuntu-latest
+    steps: 
+      - 
+        name: checkout
+        uses: actions/checkout@v1
+      - 
+        name: Build container image
+        uses: docker/build-push-action@v1
+        with:
+          username: ${{ github.actor}}
+          password: ${{ secrets.GH_TOKEN }} 
+          registry: docker.pkg.github.com
+          repository: ${{ github.repository }}/msb-odoo
+          tag_with_ref: true
