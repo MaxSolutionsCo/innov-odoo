@@ -9,15 +9,15 @@ from odoo.http import Controller, request, route
 class MBTrackOrder(Controller):
 
     @route(['/track-order'], type='http', auth="public", website=True , methods=['POST', 'GET'], csrf=True)
-    def track_order(self, **kw):        
+    def track_order(self, **kw):
         vals = {
             'items': [],
             'so_name': kw.get("so-name", None),
             'so_id': None,
             'estimated_delivery_date': None,
-            'carrier_code': None,
-            'carrier_name': None,
-            'message':None
+            'carrier_code':None,
+            'carrier_name': None,  
+            'message': None
         }
         if request.httprequest.method == "POST":
             to_date = lambda so, dt, sz=19: str(fields.Datetime.context_timestamp(so, fields.Datetime.from_string(dt)))[:sz]
@@ -28,6 +28,37 @@ class MBTrackOrder(Controller):
                 if len(so):
                     if hasattr(so, 'commitment_date'):
                         vals.update({'estimated_delivery_date': to_date(so, so.commitment_date, 10)})
+                    items = []
+
+                    def log (messages):
+                        for message in messages:
+                            # tracking_value_ids
+                            name = None
+                            description = None
+                            if len(message.tracking_value_ids):
+                                description = ''
+                                for field in message.tracking_value_ids:
+                                    if field.field == 'state':
+                                        description +=  "{} -> {}".format(field.old_value_char, field.new_value_char)
+                                if not len(description):
+                                    description = None
+                            else:
+                                body_name = re.search(r't-name(.*)t-name', message.body)
+                                body_description = re.search(r't-desc(.*)t-desc', message.body)
+                                if body_name or body_description:
+                                    if body_name:
+                                        name = str(body_name.group()).replace('t-name','').strip()                            
+                                    if body_description:
+                                        description = str(body_description.group()).replace('t-desc','').strip()
+                                    
+                            if description:
+                                items.append(
+                                    {
+                                        'date': to_date(so, message.date),
+                                        'name': name,
+                                        'description': description
+                                    }
+                                )
 
                     if hasattr(so, 'picking_ids'):
                         carrier_code =""
@@ -41,30 +72,14 @@ class MBTrackOrder(Controller):
                             'carrier_code': carrier_code[:-2],
                             'carrier_name': carrier_name[:-2],
                         })
-                    items = []
-                    for message in so.message_ids:
-                        name = re.search(r't-name(.*)t-name', message.body)
-                        if not name:
-                            continue
-                        name = str(name.group()).replace('t-name','').strip()
-
-                        description = re.search(r't-desc(.*)t-desc', message.body)
-                        if description:
-                            description = str(description.group()).replace('t-desc','').strip()
-                        else:
-                            description = ''
-                        items.append(
-                            {
-                                'date': to_date(so, message.date),
-                                'name': name,
-                                'description': description
-                            }
-                        )
+                        #log(so.picking_ids.message_ids)
+                    
+                    log(so.message_ids)
                     vals.update({'items':items})
                     vals.update({'so_id': so.id})                
                 else:
                     vals.update({'message': "La orden #%s no fue encontrada." % vals.get('so_name')})
             else:
                 vals.update({'message': "El Número de orden es requerido"})
-        
+
         return request.render("msb_track_order.msb_track_order_templ", vals)

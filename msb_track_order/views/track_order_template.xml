@@ -16,6 +16,7 @@
                                 <div class="form-group field-so-name">
                                     <input type="text" name="so-name" id="so-name" required="True"
                                             style="text-align:center;"
+                                            t-att-value="so_name"
                                            class="form-control" placeholder="No. de  orden" maxlength="64"/>
                                 </div>
                                 <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
@@ -37,19 +38,19 @@
             <section t-if="len(items)" id="msb-track-order-timeline">
                 <div class="container">
                     <div class="row text-center">
-                        <div t-if="so_name" class="col-md-4">
+                        <div t-if="so_name" class="">
                             <h3><a t-att-href="'/my/orders/%s' % so_id " t-esc="so_name"/></h3>
                             <i class="fa fa-shopping-basket"></i>
                             <span class="text-muted">No. Orden</span>
                         </div>
-                        <div t-if="estimated_delivery_date" class="col-md-4">
+                        <div t-if="estimated_delivery_date" class="">
                             <h3 t-esc="estimated_delivery_date"></h3>
                             <i class="fa fa-calendar-o"></i>
                             <span class="text-muted">                            
                                 Fecha estimada de entrega
                             </span>
                         </div>
-                        <div t-if ="carrier_code" class="col-md-4">
+                        <div t-if ="carrier_code" class="">
                             <h3 t-esc="carrier_code"></h3>
                             <i class="fa fa-truck"></i>
                             <span class="text-muted">Código de rastreo <t t-if="carrier_name">via <b t-esc="carrier_name"/> </t></span>
@@ -64,10 +65,12 @@
                                     <div t-att-class="'direction-r' if item_index%2 else 'direction-l'">
                                       <div class="flag-wrapper">
                                         <span class="hexa"></span>
-                                        <span class="flag" t-esc="item.get('name')"/>
-                                        <span class="time-wrapper"><span class="time" t-esc="item.get('date')"/></span>
+                                        <span t-if="item.get('name')" class="flag" t-esc="item.get('name')"/>
+                                        <span class="time-wrapper">
+                                            <span class="time" t-esc="item.get('date')"/>
+                                        </span>
                                       </div>
-                                      <div class="desc" t-esc="item.get('description')"/>
+                                      <div class="desc" t-raw="item.get('description')"/>
                                     </div>
                                     <t t-set="item_index" t-value="item_index + 1"/>
                                 </li>
